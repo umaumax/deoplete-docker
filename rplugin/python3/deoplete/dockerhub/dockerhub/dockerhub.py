@@ -8,6 +8,7 @@ except ImportError:
     import json
 import certifi
 import urllib3
+import os
 
 
 class DockerHub(object):
@@ -17,9 +18,9 @@ class DockerHub(object):
         self.url = url or '{0}/{1}'.format(
             'https://hub.docker.com', self.version
         )
-        self.http = urllib3.PoolManager(
-                cert_reqs='CERT_REQUIRED',
-                ca_certs=certifi.where())
+        option = {'cert_reqs': 'CERT_REQUIRED', 'ca_certs': certifi.where()}
+        http_proxy = os.getenv("http_proxy")
+        self.http = urllib3.ProxyManager(http_proxy, **option) if http_proxy else urllib3.PoolManager(**option)
 
     def _request(self, path):
         return self.http.request('GET', '{0}/{1}/'.format(self.url, path))
